@@ -12,7 +12,7 @@
         return pow($num1, $num2);
     }
 
-    $number1 = 2;
+    $number1 = 2; //$studentName 
     $number2 = 6;
     $result = power($number1, $number2); // calling function 
 
