@@ -1,20 +1,34 @@
 <?php
 
-if(isset($_POST['btnLogin'])) //login request
-{
-   $email = $_POST['email']; // it is name attribute value of form control 
-   $password = $_POST['password'];
+require_once "dbconnect.php";
 
-   $hashcode ="$2y$10\$mzlFW8arI607VmHHP6.6t.y5xvAHSrEoV0BR9WPKxgOVNuIOj5.HS";
-   if(password_verify($password, $hashcode)) //plain text, hashcode
-   {
-        echo "login success";
-   }
-   else{
-        echo "login fail";
-   }
+if (!isset($_SESSION)) {
+    session_start();
 }
 
+if (isset($_POST['btnLogin'])) //login request
+{
+    $email = $_POST['email']; // it is name attribute value of form control 
+    $password = $_POST['password'];
+    $sql = "select * from admin where email = ?";
+    $stmt = $conn->prepare($sql); // prevent Sql injection attack
+    $stmt->execute([$email]);
+    $adminInfo = $stmt->fetch();
+    
+    if ($adminInfo) // email exists 
+    {
+        $hashcode = $adminInfo["password"];
+        if (password_verify($password, $hashcode)) //plain text, hashcode
+        {
+            $_SESSION['email'] = $email;
+        } else { //correct email and incorrect psw
+            echo "login fail hascode";
+        }
+    } // if end
+    else { // email does not exist
+        $errMsg = "Email does not exist";
+    }
+}
 
 ?>
 
@@ -42,11 +56,18 @@ if(isset($_POST['btnLogin'])) //login request
 
         <div class="row">
             <div class="col-md-6 mx-auto">
-                <form action="login.php" class="form mt-3" method= "post">
+                <form action="login.php" class="form mt-3" method="post">
 
                     <fieldset>
 
                         <legend>Admin Login</legend>
+
+                        <?php
+                        if (isset($errMsg)) {   
+                                echo "<p class = 'alert alert-danger'>$errMsg</p>";
+                        }
+                        ?>
+
                         <div class="mb-1">
 
                             <label for="" class="form-label">Email</label>
