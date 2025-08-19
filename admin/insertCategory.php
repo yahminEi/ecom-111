@@ -1,10 +1,33 @@
 <?php
+require_once "dbconnect.php";
+if (!isset($_SESSION)) {
+    session_start();
+}
+if (isset($_POST['btnAdd'])) // checking whether submit button is clicked
+{
+    $catName = $_POST['catName'];
+    $description = $_POST['description'];
+    try {
+        $sql = "insert into category values (?,?,?)";
+        $stmt = $conn->prepare($sql); //prevent SQL injection attack
+        $status = $stmt->execute([null, $catName, $description]);
+        $id = $conn->lastInsertId();
+        if ($status) {
+            $message = "category with id $id has been inserted";
+            $_SESSION['message'] = $message;
+            header("Location:viewInfo.php");
+        }
+    } catch (PDOException $e) {
+        echo  $e->getMessage();
+    }
+}
 
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,33 +36,43 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
 
 </head>
+
 <body>
 
-<div class="container-fluid">
+    <div class="container-fluid">
 
-    <div class="row">
-        <?php require_once "navigation.php" ; ?>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mx-auto py-5">
-            <form action="insertCategory.php" method = "post" class ="form">
-                <div class="mb-3">
-                    <label for="" class="form-label">Category Name</label>
-                    <input type="text" class="form-control" name = "catName">
-                </div>
-
-                <div class="mb-3">
-                    <button type = "sumbit" class="btn btn-primary rounded" name="btnAdd">
-                        Add Category
-                    </button>
-                </div>
-
-            </form>
+        <div class="row">
+            <?php require_once "navigation.php"; ?>
         </div>
 
+        <div class="row">
+            <div class="col-md-6 mx-auto py-5">
+                <!---- actioon = 'insertCategory.php' -->
+                <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" class="form">
+                    <div class="mb-3">
+                        <label for="" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" name="catName">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="" class="form-label">Description</label>
+                        <textarea name="description" id="desc" class="form-control"
+                            placeholder="Please write description">
+                        </textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <button type="sumbit" class="btn btn-primary rounded" name="btnAdd">
+                            Add Category
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
     </div>
-</div>
-    
+
 </body>
+
 </html>
