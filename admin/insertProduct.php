@@ -1,20 +1,58 @@
 <?php
 require_once "dbconnect.php";
 
-try{
+try {
     $sql = "select * from category";
-   $stmt = $conn->prepare($sql);
-   $stmt->execute();
-   $categories = $stmt->fetchAll(); //multiple rows returned
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $categories = $stmt->fetchAll(); //multiple rows returned
 
-}catch(PDOException $e){
+} catch (PDOException $e) {
     echo $e->getMessage();
 }
 
-if(isset($_POST['insertBtn'])){
+if (isset($_POST['insertBtn'])) {
 
-    echo "$_POST[pname]<br> $_POST[category]<br> $_POST[description]<br>
-    $_POST[sprice]<br> $_POST[quantity]<br> $_POST[bprice]<br>";
+    $productName = $_POST['pname'];
+    $category = $_POST['category'];
+    $desc = $_POST['description'];
+    $sellPrice = $_POST['sprice'];
+    $qty = $_POST['quantity'];
+    $buyPrice = $_POST['bprice'];
+    $productImage = $_FILES['pimg'];
+    $filePath = "productImages/" . $productImage['name'];
+
+    // echo $productImage['name']."<br>";
+    // echo $productImage['type']."<br>";
+    // echo $productImage['size']."<br>";
+    // echo $productImage['tmp_name']."<br>";
+
+    //move temp file into specified directory
+
+    try {
+        if (move_uploaded_file($productImage['tmp_name'], $filePath)) { //id	product_name	cost	price	description	image_path	category	quantity	
+
+            $sql = "insert into product 
+        (product_name, cost, price, description, image_path, category, quantity)
+        values(?,?,?,?,?,?,?)";
+
+            $stmt = $conn->prepare($sql);
+            $flag = $stmt->execute([
+                $productName,
+                $buyPrice,
+                $sellPrice,
+                $desc,
+                $filePath,
+                $category,
+                $qty
+            ]);
+            if ($flag) {
+                header("Location:viewInfo.php");
+            }
+        }
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
 }
 
 ?>
@@ -36,11 +74,11 @@ if(isset($_POST['insertBtn'])){
             <?php require_once "navigation.php" ?>
         </div>
         <div class="row">
-            <div class="col-md-12 mx-auto py-5">
+            <div class="col-md-6 my-5 mx-auto">
                 <form action="insertProduct.php" class="form card" method="post" enctype="multipart/form-data">
 
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="row mx-auto">
+                        <div class="col-md-6">
                             <div class="mb-2">
                                 <label for="pname" class="form-label">Product Name</label>
                                 <input type="text" class="form-control" name="pname" id="pname" required>
@@ -48,12 +86,13 @@ if(isset($_POST['insertBtn'])){
                             </div>
                             <div class="mb-2">
                                 <label for="" class="form-label"></label>
-                                <select name="category" id="" class="form-select">
+
+                                <select name="category" id="" class="form-select" required>
                                     <option value="">Choose Category</option>
                                     <?php
-                                    if(isset($categories)){
-                                        foreach($categories as $category){
-                                            echo "<option value=>$category[id]>$category[cat_name]</option>";
+                                    if (isset($categories)) {
+                                        foreach ($categories as $category) {
+                                            echo "<option value='{$category['id']}'>{$category['cat_name']}</option>";
                                         }
                                     }
                                     ?>
@@ -71,26 +110,26 @@ if(isset($_POST['insertBtn'])){
 
                             <div class="mb-2">
                                 <label for="bprice" class="form-label">Buy Price</label>
-                                <input type="number" class="form-control" name ="bprice" id="bprice">
+                                <input type="number" class="form-control" name="bprice" id="bprice">
 
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-2">
                                 <label for="sprice" class="form-label">Sell Price</label>
-                                <input type="number" class="form-control" name ="sprice" id="sprice">
+                                <input type="number" class="form-control" name="sprice" id="sprice">
 
                             </div>
                             <div class="mb-2">
-                                 <label for="qty" class="form-label">Quantity</label>
-                                <input type="number" class="form-control" name ="quantity" id="qty">
+                                <label for="qty" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="quantity" id="qty">
                             </div>
                             <div class="mb-2">
                                 <label for="pimg" class="form-control">Product Image</label>
                                 <input type="file" class="form-control" name="pimg" id="pimg">
                             </div>
                             <div class="mb-2">
-                            <button class="btn btn-primary" name="insertBtn">Insert Product</button>
+                                <button type="submit" class="btn btn-primary" name="insertBtn">Insert Product</button>
                             </div>
 
                         </div>
