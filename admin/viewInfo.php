@@ -4,15 +4,22 @@ if (!isset($_SESSION)) {
     session_start();
 }
 require_once "dbconnect.php";
-try {
 
-    $sql = "select * from category";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $categories = $stmt->fetchAll();
-} catch (PDOException $e) {
-    echo "" . $e->getMessage() . "";
+if (isset($_GET['show']) && $_GET['show'] == "categories") {
+    try {
+
+        $sql = "select * from category";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $categories = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        echo "" . $e->getMessage() . "";
+    }
+} else if (isset($_GET['show']) && $_GET['show'] == "products") {
+    echo "after insert products";
 }
+
+
 
 ?>
 
@@ -38,9 +45,9 @@ try {
                 <div class="card">
                     <a href="insertCategory.php" class="btn btn-outline-primary rounded mb-2">
                         Insert Category</a>
-                        <a href="insertProduct.php" class="btn btn-outline-primary rounded mb-2">
-                            Insert Product
-                        </a>
+                    <a href="insertProduct.php" class="btn btn-outline-primary rounded mb-2">
+                        Insert Product
+                    </a>
                 </div>
 
 
