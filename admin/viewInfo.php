@@ -16,7 +16,21 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
         echo "" . $e->getMessage() . "";
     }
 } else if (isset($_GET['show']) && $_GET['show'] == "products") {
-    echo "after insert products";
+    try {
+
+        $sql = "select p.id, p.product_name,
+                p.cost, p.price,
+                p.description, p.image_path,
+                c.cat_name as category,
+                p.id catid, p.quantity
+                from product p, category c where p.category = c.id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $products = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        echo "" . $e->getMessage() . "";
+    }
 }
 
 
@@ -42,13 +56,16 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
 
         <div class="row">
             <div class="col-md-2 mx-auto py-5">
-                <div class="card">
-                    <a href="insertCategory.php" class="btn btn-outline-primary rounded mb-2">
-                        Insert Category</a>
-                    <a href="insertProduct.php" class="btn btn-outline-primary rounded mb-2">
-                        Insert Product
-                    </a>
-                </div>
+
+                <?php if (isset($_SESSION['admin_login'])) { ?>
+                    <div class="card">
+                        <a href="insertCategory.php" class="btn btn-outline-primary rounded mb-2">
+                            Insert Category</a>
+                        <a href="insertProduct.php" class="btn btn-outline-primary rounded mb-2">
+                            Insert Product
+                        </a>
+                    </div>
+                <?php } ?>
 
 
             </div>
@@ -56,7 +73,9 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
                 <?php
                 if (isset($_SESSION['message'])) {
                     echo "<p class ='alert alert-success'>$_SESSION[message]</p>";
+                    unset($_SESSION['message']);
                 }
+
 
                 ?>
                 <table class="table table-striped">
@@ -68,11 +87,33 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
                                  <td>$category[id]</td>
                                  <td>$category[cat_name]</td>
                                  <td>$category[description]</td>
+                                 <td><a class='btn btn-secondary btn-sm' href=editCategory.php?val=edit>edit</a></td>
+                                <td><a class='btn btn-danger btn-sm' href=editCategory.php?val=delete&id=$category[id]>delete</a></td>
+
                                  
                               </tr>";
                         } //for each end
 
                     } // if end
+
+                    else if (isset($products)) {
+                        foreach ($products as $product) {
+                            echo "<tr>
+                                  <td>$product[id]</td>
+                                  <td>$product[product_name]</td>
+                                  <td>$product[cost]</td>
+                                  <td>$product[price]</td>
+                                  <td>$product[description]</td>
+                                  <td>$product[category]</td>
+                                  <td>$product[quantity]</td>
+                                  <td><img style=width:75px;height:75px; src=$product[image_path]></td>
+                                  <td><a class='btn btn-secondary btn-sm' href=editProduct.php?val=edit&id=$product[id]>edit</a></td>
+                                  <td><a class='btn btn-danger btn-sm' href=editProduct.php?val=delete&id=$product[id]>delete</a></td>
+
+
+                                 </tr>";
+                        }
+                    }
 
                     ?>
 
