@@ -4,6 +4,15 @@ if (!isset($_SESSION)) {
     session_start();
 }
 require_once "dbconnect.php";
+try {
+
+    $sql = "select * from category";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $categoryList = $stmt->fetchAll();
+} catch (PDOException $e) {
+    echo "" . $e->getMessage() . "";
+}
 
 if (isset($_GET['show']) && $_GET['show'] == "categories") {
     try {
@@ -31,6 +40,16 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
     } catch (PDOException $e) {
         echo "" . $e->getMessage() . "";
     }
+} else if (isset($_POST['catSearch']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    $cid =  $_POST['category']; // it will have option value id
+    $sql = "select p.id, p.product_name, p.cost, p.price, 
+                p.description, p.image_path, c.cat_name as category, p.quantity
+                from product p, category c 
+                where p.category = c.id AND
+                c.id = ? ";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$cid]);
+    $products = $stmt->fetchAll();
 }
 
 
@@ -67,7 +86,23 @@ if (isset($_GET['show']) && $_GET['show'] == "categories") {
                     </div>
                 <?php } ?>
 
+                <div class="card shadow-sm mt-3">
+                    <form action="viewInfo.php" method="post" class="form">
+                        <select name="category" id="" class="form-select bg-light">
+                            <option value="">Choose Category</option>
+                            <?php
+                            if (isset($categoryList)) {
+                                foreach ($categoryList as $category) {
+                                    echo "<option value=$category[id]>$category[cat_name]</option>";
+                                }
+                            }
 
+                            ?>
+
+                        </select>
+                        <button class="btn btn-outline-primary" name="catSearch" type="submit">Search</button>
+                    </form>
+                </div>
             </div>
             <div class="col-md-10 mx-auto py-5">
                 <?php
